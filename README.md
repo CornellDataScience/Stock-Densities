@@ -5,10 +5,18 @@ Data collection
 - [ ] Collect minute level market data for SPY
 - [ ] Calculate deltas
 
-Estimation
-- [ ] Implement MAP estimation (Gaussian & Fat tailed)
-- [ ] Implement KDEs
-- [ ] Implement mixture models
+Density Estimation
+- [ ] Decide on a density estimation method (or two)
+- MAP estimation (Gaussian & Fat tailed)
+- KDEs
+- Mixture models
+- Log-Spline model 
+- [ ] Implement chosen density estimation model
+
+Time Series Estimation
+- [ ] Decide on time series estimation method depending on density technique
+- ARIMA
+- [ ] Implement chosen time series model
 
 Evaluation
 - [ ] Evaluate using Kolmogorov-Smirnov Testing
