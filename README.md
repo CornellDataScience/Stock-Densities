@@ -2,7 +2,7 @@
 
 **OKRs:**
 Data collection
-- [ ] Collect minute level market data for SPY
+- [x] Collect minute level market data for SPY
 - [ ] Calculate deltas
 
 Density Estimation
