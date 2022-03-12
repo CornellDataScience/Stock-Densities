@@ -3,10 +3,10 @@
 **OKRs:**
 Data collection
 - [x] Collect minute level market data for SPY
-- [ ] Calculate deltas
+- [x] Calculate deltas
 
 Density Estimation
-- [ ] Decide on a density estimation method (or two)
+- [x] Decide on a density estimation method (or two)
 - MAP estimation (Gaussian & Fat tailed)
 - KDEs
 - Mixture models
@@ -14,7 +14,7 @@ Density Estimation
 - [ ] Implement chosen density estimation model
 
 Time Series Estimation
-- [ ] Decide on time series estimation method depending on density technique
+- [x] Decide on time series estimation method depending on density technique
 - ARIMA
 - [ ] Implement chosen time series model
 
