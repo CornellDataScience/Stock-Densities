@@ -22,14 +22,14 @@ def adf_check(time_series):
         print("weak evidence against null hypothesis, time series has a unit root, indicating it is non-stationary \n")
 
 
-def AR(p, df):
+def AR(p, df, key):
     '''
     Generating the lagged p terms
     '''
     df_temp = df
 
     for i in range(1,p+1):
-        df_temp['Shifted_values_%d' % i ] = df_temp['close'].shift(i)
+        df_temp['Shifted_values_%d' % i ] = df_temp[key].shift(i)
 
     train_size = (int)(0.8 * df_temp.shape[0])
 
@@ -59,7 +59,7 @@ def AR(p, df):
     df_val['Predicted_Values'] = X_val.dot(lr.coef_.T) + lr.intercept_
     # df_test[['Value','Predicted_Values']].plot()
 
-    RMSE = np.sqrt(mean_squared_error(df_val['close'], df_val['Predicted_Values']))
+    RMSE = np.sqrt(mean_squared_error(df_val[key], df_val['Predicted_Values']))
 
     print("The RMSE is :", RMSE,", Value of p : ",p)
     return [df_train_2,df_val,theta,intercept,RMSE]
