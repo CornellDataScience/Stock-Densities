@@ -91,7 +91,7 @@ def MA(q,res):
 
     X_val = res_val.iloc[:,1:].values.reshape(-1,q)
     res_val['Predicted_Values'] = X_val.dot(lr.coef_.T) + lr.intercept_
-    res_val[['Residuals','Predicted_Values']].plot()
+    #  res_val[['Residuals','Predicted_Values']].plot()
 
     RMSE = np.sqrt(mean_squared_error(res_val['Residuals'], res_val['Predicted_Values']))
 
@@ -121,3 +121,23 @@ def opt_q (res, low_q, up_q):
             best_q = q
             best_rmse = RMSE
     return best_q, best_rmse
+
+def arima(p,q,df,key):
+    # Call AR
+    df_train, df_test, AR_theta, AR_intercept, AR_RMSE = AR(p, pd.DataFrame(df[key]), key)
+
+    # Combined dataframe results from AR (? -- I'm unsure ?)
+    df_c = pd.concat([df_train, df_test])
+    # Calculate residuals
+    res = pd.DataFrame()
+    res['Residuals'] = df_c[key] - df_c.Predicted_Values
+
+    # Call MA
+    res_train, res_val, MA_theta, MA_intercept, MA_RMSE = MA(q, res)
+
+    # Combined residuals dataframe
+    res_c = pd.concat([res_train, res_val])
+
+    df_c.Predicted_Values += res_c.Predicted_Values
+
+    return df_c, AR_theta, AR_intercept, AR_RMSE, MA_theta, MA_intercept, MA_RMSE
