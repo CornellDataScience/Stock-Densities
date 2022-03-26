@@ -61,7 +61,7 @@ def AR(p, df, key):
     # df_test[['Value','Predicted_Values']].plot()
 
     RMSE = np.sqrt(mean_squared_error(
-        df_val['close'], df_val['Predicted_Values']))
+        df_val[key], df_val['Predicted_Values']))
     AIC = model.aic
     BIC = model.bic
 
@@ -109,14 +109,14 @@ def MA(q, res):
     return [res_train_2, res_val, theta, intercept, RMSE, AIC, BIC]
 
 
-def opt_p(df_testing, low_p, up_p, str):
+def opt_p(df_testing, low_p, up_p, str, key):
     ''' Pick the best p based on lowest aic or bic or RMSE as specified'''
     assert (str == 'AIC' or str == 'BIC' or str == 'RMSE')
-    best_p_aic, best_p_bic, best_p_rmse = 0
-    best_rmse, best_aic, best_bic = float("inf")
+    best_p_aic, best_p_bic, best_p_rmse = 0, 0, 0
+    best_rmse, best_aic, best_bic = float("inf"), float("inf"), float("inf")
     for p in range(low_p, up_p):
         df_train_2, df_val, theta, intercept, RMSE, AIC, BIC = AR(
-            p, pd.DataFrame(df_testing))
+            p, pd.DataFrame(df_testing), key)
         if RMSE < best_rmse:
             best_p_rmse = p
             best_rmse = RMSE
@@ -137,8 +137,8 @@ def opt_p(df_testing, low_p, up_p, str):
 def opt_q(df_testing, low_q, up_q, str):
     ''' Pick the best q based on lowest aic or bic or RMSE as specified'''
     assert (str == 'AIC' or str == 'BIC' or str == 'RMSE')
-    best_q_aic, best_q_bic, best_q_rmse = 0
-    best_rmse, best_aic, best_bic = float("inf")
+    best_q_aic, best_q_bic, best_q_rmse = 0, 0, 0
+    best_rmse, best_aic, best_bic = float("inf"), float("inf"), float("inf")
     for q in range(low_q, up_q):
         res_train_2, res_val, theta, intercept, RMSE, AIC, BIC = MA(
             q, pd.DataFrame(df_testing))
@@ -163,7 +163,7 @@ def arima(low_p, high_p, low_q, high_q, df, key):
     # Call AR
     copy = df.copy(deep=True)
     # Can have 'BIC', 'AIC' or 'RMSE' as the last argument
-    best_p, best_error = opt_p(copy, low_p, high_p, 'AIC')
+    best_p, best_error = opt_p(copy, low_p, high_p, 'AIC', key)
     df_train, df_test, AR_theta, AR_intercept, AR_RMSE, AR_AIC, AR_BIC = AR(
         best_p, pd.DataFrame(df[key]), key)
 
@@ -186,3 +186,7 @@ def arima(low_p, high_p, low_q, high_q, df, key):
     df_c.Predicted_Values += res_c.Predicted_Values
 
     return df_c, AR_theta, AR_intercept, AR_RMSE, MA_theta, MA_intercept, MA_RMSE, AR_AIC, AR_BIC, MA_AIC, MA_BIC
+
+
+df = pd.read_csv('data/pars_normal_daily.csv')
+print(arima(1, 21, 1, 21, pd.DataFrame(df.mu), 'mu'))
