@@ -159,11 +159,11 @@ def opt_q(df_testing, low_q, up_q, str):
         return best_q_bic, best_bic
 
 
-def arima(low_p, high_p, low_q, high_q, df, key):
+def arima(low_p, high_p, low_q, high_q, df, key, opt_method):
     # Call AR
     copy = df.copy(deep=True)
     # Can have 'BIC', 'AIC' or 'RMSE' as the last argument
-    best_p, best_error = opt_p(copy, low_p, high_p, 'AIC', key)
+    best_p, best_error = opt_p(copy, low_p, high_p, opt_method, key)
     df_train, df_test, AR_theta, AR_intercept, AR_RMSE, AR_AIC, AR_BIC = AR(
         best_p, pd.DataFrame(df[key]), key)
 
@@ -176,7 +176,7 @@ def arima(low_p, high_p, low_q, high_q, df, key):
     # Call MA
     copy = res.copy(deep=True)
     # Can have 'BIC', 'AIC' or 'RMSE' as the last argument
-    best_q, best_error = opt_q(copy, low_q, high_q, 'AIC')
+    best_q, best_error = opt_q(copy, low_q, high_q, opt_method)
     res_train, res_val, MA_theta, MA_intercept, MA_RMSE, MA_AIC, MA_BIC = MA(
         best_q, res)
 
@@ -189,4 +189,4 @@ def arima(low_p, high_p, low_q, high_q, df, key):
 
 
 df = pd.read_csv('data/pars_normal_daily.csv')
-print(arima(1, 21, 1, 21, pd.DataFrame(df.mu), 'mu'))
+print(arima(1, 21, 1, 21, pd.DataFrame(df.mu), 'mu', 'AIC'))
