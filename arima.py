@@ -96,7 +96,7 @@ def MA(q, res):
 
     X_val = res_val.iloc[:, 1:].values.reshape(-1, q)
     res_val['Predicted_Values'] = X_val.dot(theta) + intercept
-    res_val[['Residuals', 'Predicted_Values']].plot()
+    # res_val[['Residuals', 'Predicted_Values']].plot()
 
     from sklearn.metrics import mean_squared_error
     RMSE = np.sqrt(mean_squared_error(
@@ -180,6 +180,7 @@ def arima(low_p, high_p, low_q, high_q, df, key, opt_method):
     res_train, res_val, MA_theta, MA_intercept, MA_RMSE, MA_AIC, MA_BIC = MA(
         best_q, res)
 
+    print(f"Best p and q based on {opt_method}: p={best_p}, q={best_q}")
     # Combined residuals dataframe
     res_c = pd.concat([res_train, res_val])
 
@@ -187,6 +188,3 @@ def arima(low_p, high_p, low_q, high_q, df, key, opt_method):
 
     return df_c, AR_theta, AR_intercept, AR_RMSE, MA_theta, MA_intercept, MA_RMSE, AR_AIC, AR_BIC, MA_AIC, MA_BIC
 
-
-df = pd.read_csv('data/pars_normal_daily.csv')
-print(arima(1, 21, 1, 21, pd.DataFrame(df.mu), 'mu', 'AIC'))
