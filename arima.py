@@ -65,8 +65,8 @@ def AR(p, df, key):
     AIC = model.aic
     BIC = model.bic
 
-    print("The RMSE is :", RMSE, ", Value of p : ",
-          p, ", AIC is : ", AIC, ", BIC is : ", BIC)
+    # print("The RMSE is :", RMSE, ", Value of p : ",
+    #       p, ", AIC is : ", AIC, ", BIC is : ", BIC)
     return [df_train_2, df_val, theta, intercept, RMSE, AIC, BIC]
 
 
@@ -104,8 +104,8 @@ def MA(q, res):
     AIC = model.aic
     BIC = model.bic
 
-    print("The RMSE is:", RMSE, ", Value of AIC is:", AIC,
-          ", Value of BIC is:", BIC, ", Value of q:", q)
+    # print("The RMSE is:", RMSE, ", Value of AIC is:", AIC,
+    #       ", Value of BIC is:", BIC, ", Value of q:", q)
     return [res_train_2, res_val, theta, intercept, RMSE, AIC, BIC]
 
 
@@ -186,5 +186,5 @@ def arima(low_p, high_p, low_q, high_q, df, key, opt_method):
 
     df_c.Predicted_Values += res_c.Predicted_Values
 
-    return df_c, AR_theta, AR_intercept, AR_RMSE, MA_theta, MA_intercept, MA_RMSE, AR_AIC, AR_BIC, MA_AIC, MA_BIC
+    return {"data": df_c, "params_AR": [AR_theta, AR_intercept, AR_RMSE], "params_MA": [MA_theta, MA_intercept, MA_RMSE], "scores_AR": [AR_AIC, AR_BIC], "scores_MA": [MA_AIC, MA_BIC]}
 
