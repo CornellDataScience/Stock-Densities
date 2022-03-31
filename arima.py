@@ -160,6 +160,14 @@ def opt_q(df_testing, low_q, up_q, str):
 
 
 def arima(low_p, high_p, low_q, high_q, df, key, opt_method):
+    '''
+    Returns a dictionary with the following keys:
+    data: a Dataframe of original data and column "Predicted_Values"
+    params_AR
+    params_MA
+    scores_AR
+    scores_MA
+    '''
     # Call AR
     copy = df.copy(deep=True)
     # Can have 'BIC', 'AIC' or 'RMSE' as the last argument
