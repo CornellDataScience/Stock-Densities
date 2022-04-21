@@ -3,7 +3,7 @@ from numpy.random import normal
 import matplotlib.pyplot as plt
 import csv
 
-def simulate_data(
+def sim_densities_data(
         loc_fn1=lambda x: -x/25, 
         loc_fn2=lambda x: x/25, 
         var_fn1=lambda x: 1,
@@ -26,5 +26,17 @@ def simulate_data(
             plt.hist(samples[i], bins=20)
             plt.show()
 
+
+def sim_stock_data(
+    mu = 0.001,
+    sigma = 0.01,
+    start_price = 5):
+    returns = np.random.normal(loc=mu, scale=sigma, size=100)
+    price = start_price*(1+returns).cumprod()
+    return price
+
 if __name__ == "__main__":
-    simulate_data(loc_fn1=lambda x: -x/10)
+    sim_densities_data(loc_fn1=lambda x: -x/10)
+    plt.plot(sim_stock_data())
+    plt.show()
+
