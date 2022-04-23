@@ -1,17 +1,5 @@
-
-def B(x, k, i, t):
-   if k == 0:
-      return 1.0 if t[i] <= x < t[i+1] else 0.0
-   if t[i+k] == t[i]:
-      c1 = 0.0
-   else:
-      c1 = (x - t[i])/(t[i+k] - t[i]) * B(x, k-1, i, t)
-   if t[i+k+1] == t[i+1]:
-      c2 = 0.0
-   else:
-      c2 = (t[i+k+1] - x)/(t[i+k+1] - t[i+1]) * B(x, k-1, i+1, t)
-   return c1 + c2
 #%%
+from functools import update_wrapper
 import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
@@ -19,6 +7,18 @@ from scipy.interpolate import splev, splrep
 from collections import defaultdict
 from datetime import timedelta
 
+def get_knots(data):
+   '''
+   Currently evenly spaced knots, start and end at quantiles
+   Should not include max and min of data
+   '''
+   upper = np.quantile(data, 0.8)
+   lower = np.quantile(data, 0.2)
+   num_knots = int(2*len(data)**(1/5)) # suggested number of knots
+   return np.linspace(lower, upper, num_knots) 
+
+
+#%%
 df = pd.read_csv("data/SPY_minute.csv",skiprows=1)
 datetimes = pd.to_datetime(df.Dates[1:], format='%m/%d/%y %H:%M')
 df["Dates"][1:] = datetimes
@@ -32,6 +32,7 @@ ret_by_date = defaultdict(list)
 for i in range(len(df)):
     ret_by_date[df["Dates"].iloc[i].date()].append(df["log_ret"].iloc[i])
 
+pars = []
 # Get thetas
 for date, rets in ret_by_date.items():
    hist, bin_edges = np.histogram(rets, bins=50)
@@ -43,23 +44,33 @@ for date, rets in ret_by_date.items():
    # refit on new edges
    hist, bin_edges = np.histogram(rets, bins=vary_edges)
    masses = hist / np.sum(hist)
-      
-   print("masses", masses)
+
+   # print("masses", masses)
    midpoints = (bin_edges[:-1] + bin_edges[1:])/2
-   spl = splrep(midpoints, np.log(masses)) #logspline
-   x2 = np.linspace(-0.002, 0.002, 200)
-   x2 = np.linspace(-0.002, 0.002, 200)
+   # print("log_masses", log_masses)
+    # for logspline
+   spl = splrep(midpoints, np.log(masses), t=get_knots(midpoints)) 
+   # spl = splrep(midpoints, np.log(masses))
+   print(spl[0])
+   pars.append(spl[1]) # append thetas
+   
+   '''
+   # x2 = np.linspace(-0.002, 0.002, 200)
+   x2 = midpoints
    y2 = splev(x2, spl)
-   plt.plot(midpoints, np.log(masses), 'o')
-   plt.plot(x2, y2, color="red")
-   plt.show()
-   # plt.plot(midpoints, masses, 'o')
-   # plt.plot(x2, np.exp(y2), color="red")
+
+   # plt.plot(midpoints, np.log(masses), 'o')
+   # plt.plot(x2, y2, color="red")
    # plt.show()
 
+   plt.plot(midpoints, masses, 'o')
+   plt.plot(spl[0], np.exp(splev(spl[0], spl)), 'o', color="yellow")
+   plt.plot(x2, np.exp(y2), color="red")
+   plt.show()
+   '''
 
-
-
-# %%
+res = pd.DataFrame(pars)
+res.index = ret_by_date.keys()
+res.to_csv("data/thetas.csv")
 
 # %%
