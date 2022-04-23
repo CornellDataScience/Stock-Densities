@@ -73,4 +73,32 @@ res = pd.DataFrame(pars)
 res.index = ret_by_date.keys()
 res.to_csv("data/thetas.csv")
 
-# %%
+# %% Time series on coefficients
+import arima
+
+df = pd.read_csv("data/thetas.csv", index_col=0)
+print(df.head())
+df = df.fillna(0)
+
+# idx = int(len(df)*0.8)
+# train, test = df.iloc[:idx], df.iloc[idx:]
+# train.head(), test.head()
+
+pred = pd.DataFrame(index=df.index)
+for par in df.columns:
+   arima.adf_check(df[par]) # Stationary -- no differencing needed
+   print(f"=================== {par} ===================")
+   results = arima.arma(1, 10, 1, 10, pd.DataFrame(df[par]), par, "BIC")
+   results["data"][[par,'Predicted_Values']].plot()
+   pred[par] = results["data"][['Predicted_Values']]
+   plt.title(par)
+   plt.show()
+
+# Store results
+print(pred)
+res = pred.dropna()
+# res.index = ret_by_date.keys() #TODO: fix index
+res.to_csv("data/thetas_preds.csv")
+
+# %% Generating spline from theta predictions
+

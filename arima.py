@@ -214,6 +214,3 @@ def arma(low_p, high_p, low_q, high_q, df, key, opt_method):
         "scores_AR": [AR_AIC, AR_BIC],
         "scores_MA": [MA_AIC, MA_BIC],
     }
-
-def arima(low_p, high_p, low_q, high_q, d, df, key, opt_method):
-    
