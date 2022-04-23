@@ -11,33 +11,41 @@ def adf_check(time_series):
     Pass in a time series, returns ADF report
     """
     result = adfuller(time_series)
-    print('Augmented Dickey-Fuller Test:')
-    labels = ['ADF Test Statistic', 'p-value',
-              'Number of Lags Used', 'Number of Observations Used']
+    print("Augmented Dickey-Fuller Test:")
+    labels = [
+        "ADF Test Statistic",
+        "p-value",
+        "Number of Lags Used",
+        "Number of Observations Used",
+    ]
 
     for value, label in zip(result, labels):
-        print(label+' : '+str(value))
+        print(label + " : " + str(value))
 
     if result[1] <= 0.05:
-        print("strong evidence against the null hypothesis, reject the null hypothesis. Data has no unit root and is stationary")
+        print(
+            "strong evidence against the null hypothesis, reject the null hypothesis. Data has no unit root and is stationary"
+        )
     else:
-        print("weak evidence against null hypothesis, time series has a unit root, indicating it is non-stationary \n")
+        print(
+            "weak evidence against null hypothesis, time series has a unit root, indicating it is non-stationary \n"
+        )
 
 
 def AR(p, df, key):
-    '''
+    """
     Generating the lagged p terms
-    '''
+    """
     df_temp = df
 
-    for i in range(1, p+1):
-        df_temp['Shifted_values_%d' % i] = df_temp[key].shift(i)
+    for i in range(1, p + 1):
+        df_temp["Shifted_values_%d" % i] = df_temp[key].shift(i)
 
     train_size = (int)(0.8 * df_temp.shape[0])
 
     # Breaking data set into test and training
     df_train = pd.DataFrame(df_temp[0:train_size])
-    df_val = pd.DataFrame(df_temp[train_size:df_temp.shape[0]])
+    df_val = pd.DataFrame(df_temp[train_size : df_temp.shape[0]])
 
     df_train_2 = df_train.dropna()
     # X contains the lagged values ,hence we skip the first column
@@ -53,15 +61,14 @@ def AR(p, df, key):
 
     theta = np.array(model.params[1:])
     intercept = model.params[0]
-    df_train_2['Predicted_Values'] = X_train.dot(theta) + intercept
+    df_train_2["Predicted_Values"] = X_train.dot(theta) + intercept
     # df_train_2[['Value','Predicted_Values']].plot()
 
     X_val = df_val.iloc[:, 1:].values.reshape(-1, p)
-    df_val['Predicted_Values'] = X_val.dot(theta) + intercept
+    df_val["Predicted_Values"] = X_val.dot(theta) + intercept
     # df_test[['Value','Predicted_Values']].plot()
 
-    RMSE = np.sqrt(mean_squared_error(
-        df_val[key], df_val['Predicted_Values']))
+    RMSE = np.sqrt(mean_squared_error(df_val[key], df_val["Predicted_Values"]))
     AIC = model.aic
     BIC = model.bic
 
@@ -71,15 +78,15 @@ def AR(p, df, key):
 
 
 def MA(q, res):
-    ''' Moving Average'''
+    """Moving Average"""
 
-    for i in range(1, q+1):
-        res['Shifted_values_%d' % i] = res['Residuals'].shift(i)
+    for i in range(1, q + 1):
+        res["Shifted_values_%d" % i] = res["Residuals"].shift(i)
 
     train_size = (int)(0.8 * res.shape[0])
 
     res_train = pd.DataFrame(res[0:train_size])
-    res_val = pd.DataFrame(res[train_size:res.shape[0]])
+    res_val = pd.DataFrame(res[train_size : res.shape[0]])
 
     res_train_2 = res_train.dropna()
 
@@ -91,16 +98,18 @@ def MA(q, res):
     theta = np.array(model.params[1:])
     intercept = model.params[0]
 
-    res_train_2['Predicted_Values'] = X_train.dot(theta) + intercept
+    res_train_2["Predicted_Values"] = X_train.dot(theta) + intercept
     # res_train_2[['Residuals','Predicted_Values']].plot()
 
     X_val = res_val.iloc[:, 1:].values.reshape(-1, q)
-    res_val['Predicted_Values'] = X_val.dot(theta) + intercept
+    res_val["Predicted_Values"] = X_val.dot(theta) + intercept
     # res_val[['Residuals', 'Predicted_Values']].plot()
 
     from sklearn.metrics import mean_squared_error
-    RMSE = np.sqrt(mean_squared_error(
-        res_val['Residuals'], res_val['Predicted_Values']))
+
+    RMSE = np.sqrt(
+        mean_squared_error(res_val["Residuals"], res_val["Predicted_Values"])
+    )
     AIC = model.aic
     BIC = model.bic
 
@@ -110,13 +119,14 @@ def MA(q, res):
 
 
 def opt_p(df_testing, low_p, up_p, str, key):
-    ''' Pick the best p based on lowest aic or bic or RMSE as specified'''
-    assert (str == 'AIC' or str == 'BIC' or str == 'RMSE')
+    """Pick the best p based on lowest aic or bic or RMSE as specified"""
+    assert str == "AIC" or str == "BIC" or str == "RMSE"
     best_p_aic, best_p_bic, best_p_rmse = 0, 0, 0
     best_rmse, best_aic, best_bic = float("inf"), float("inf"), float("inf")
     for p in range(low_p, up_p):
         df_train_2, df_val, theta, intercept, RMSE, AIC, BIC = AR(
-            p, pd.DataFrame(df_testing), key)
+            p, pd.DataFrame(df_testing), key
+        )
         if RMSE < best_rmse:
             best_p_rmse = p
             best_rmse = RMSE
@@ -126,22 +136,23 @@ def opt_p(df_testing, low_p, up_p, str, key):
         if BIC < best_bic:
             best_p_bic = p
             best_bic = BIC
-    if (str == 'RMSE'):
+    if str == "RMSE":
         return best_p_rmse, best_rmse
-    elif (str == 'AIC'):
+    elif str == "AIC":
         return best_p_aic, best_aic
-    elif (str == 'BIC'):
+    elif str == "BIC":
         return best_p_bic, best_bic
 
 
 def opt_q(df_testing, low_q, up_q, str):
-    ''' Pick the best q based on lowest aic or bic or RMSE as specified'''
-    assert (str == 'AIC' or str == 'BIC' or str == 'RMSE')
+    """Pick the best q based on lowest aic or bic or RMSE as specified"""
+    assert str == "AIC" or str == "BIC" or str == "RMSE"
     best_q_aic, best_q_bic, best_q_rmse = 0, 0, 0
     best_rmse, best_aic, best_bic = float("inf"), float("inf"), float("inf")
     for q in range(low_q, up_q):
         res_train_2, res_val, theta, intercept, RMSE, AIC, BIC = MA(
-            q, pd.DataFrame(df_testing))
+            q, pd.DataFrame(df_testing)
+        )
         if RMSE < best_rmse:
             best_q_rmse = q
             best_rmse = RMSE
@@ -151,42 +162,44 @@ def opt_q(df_testing, low_q, up_q, str):
         if BIC < best_bic:
             best_q_bic = q
             best_bic = BIC
-    if (str == 'RMSE'):
+    if str == "RMSE":
         return best_q_rmse, best_rmse
-    elif (str == 'AIC'):
+    elif str == "AIC":
         return best_q_aic, best_aic
-    elif (str == 'BIC'):
+    elif str == "BIC":
         return best_q_bic, best_bic
 
 
-def arima(low_p, high_p, low_q, high_q, df, key, opt_method):
-    '''
+def arma(low_p, high_p, low_q, high_q, df, key, opt_method):
+    """
     Returns a dictionary with the following keys:
     data: a Dataframe of original data and column "Predicted_Values"
     params_AR
     params_MA
     scores_AR
     scores_MA
-    '''
+    """
     # Call AR
     copy = df.copy(deep=True)
     # Can have 'BIC', 'AIC' or 'RMSE' as the last argument
     best_p, best_error = opt_p(copy, low_p, high_p, opt_method, key)
     df_train, df_test, AR_theta, AR_intercept, AR_RMSE, AR_AIC, AR_BIC = AR(
-        best_p, pd.DataFrame(df[key]), key)
+        best_p, pd.DataFrame(df[key]), key
+    )
 
     # Combined dataframe results from AR (? -- I'm unsure ?)
     df_c = pd.concat([df_train, df_test])
     # Calculate residuals
     res = pd.DataFrame()
-    res['Residuals'] = df_c[key] - df_c.Predicted_Values
+    res["Residuals"] = df_c[key] - df_c.Predicted_Values
 
     # Call MA
     copy = res.copy(deep=True)
     # Can have 'BIC', 'AIC' or 'RMSE' as the last argument
     best_q, best_error = opt_q(copy, low_q, high_q, opt_method)
     res_train, res_val, MA_theta, MA_intercept, MA_RMSE, MA_AIC, MA_BIC = MA(
-        best_q, res)
+        best_q, res
+    )
 
     print(f"Best p and q based on {opt_method}: p={best_p}, q={best_q}")
     # Combined residuals dataframe
@@ -194,5 +207,13 @@ def arima(low_p, high_p, low_q, high_q, df, key, opt_method):
 
     df_c.Predicted_Values += res_c.Predicted_Values
 
-    return {"data": df_c, "params_AR": [AR_theta, AR_intercept, AR_RMSE], "params_MA": [MA_theta, MA_intercept, MA_RMSE], "scores_AR": [AR_AIC, AR_BIC], "scores_MA": [MA_AIC, MA_BIC]}
+    return {
+        "data": df_c,
+        "params_AR": [AR_theta, AR_intercept, AR_RMSE],
+        "params_MA": [MA_theta, MA_intercept, MA_RMSE],
+        "scores_AR": [AR_AIC, AR_BIC],
+        "scores_MA": [MA_AIC, MA_BIC],
+    }
 
+def arima(low_p, high_p, low_q, high_q, d, df, key, opt_method):
+    
