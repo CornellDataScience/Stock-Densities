@@ -15,6 +15,7 @@ def sim_densities_data(
             normal(loc=loc_fn1(i), scale=var_fn1(i), size=n), 
             normal(loc=loc_fn2(i), scale=var_fn2(i), size=n)
         )
+    print(samples[1])
 
     with open(name+"simulated_data.csv", 'w') as csvfile:
         writer = csv.writer(csvfile, delimiter=',', quotechar='|', quoting=csv.QUOTE_MINIMAL)
